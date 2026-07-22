@@ -1,0 +1,14 @@
+{
+  "name": "genaijs",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {},
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "groq-sdk": "^1.3.0"
+  }
+}
