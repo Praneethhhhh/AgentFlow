@@ -9,6 +9,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@tavily/core": "^0.7.6",
     "groq-sdk": "^1.3.0"
   }
 }
