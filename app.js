@@ -5,41 +5,46 @@ const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 async function main() {
   const completion = await groq.chat.completions.create({
     temperature: 0,
-    max_completion_tokens: 200,
-
-    model: "llama-3.3-70b-versatile",
+    response_format: {
+      type: "json_schema",
+      json_schema: {
+        name: "Sentiment_Analyszer",
+        schema: {
+          type: "object",
+          properties: {
+            sentiment: {
+              type: "string",
+              enum: ["Positive", "Negative", "Neutral"],
+            },
+            confidence_score: {
+              type: "number",
+            },
+            summary: {
+              type: "string",
+            },
+          },
+          required: ["sentiment", "confidence_score", "summary"],
+        },
+      },
+    },
+    model: "openai/gpt-oss-120b",
     messages: [
       {
         role: "user",
         content:
-          "Hey , who are you , Can you tell about your platform , Also tell me what is 2+2*0 , Is your only for any specific country people or is it for global people",
+          " Absolutely amazing! It arrived exaw ctly as expected, and I was pleasantly surprised by hoconsistently it reminded me why reading reviews matters. Every feature worked in its own unique way—just not the way I needed. The customer support gave me plenty of time to practice patience, and the overall experience was unforgettable for reasons I'd rather not repeat. If you're looking for something that lowers your expectations, this product certainly delivers.",
       },
       {
         role: "system",
-        content: ` Try reply briefly but if the question is very big you can consider it as a 
-outlier but try to be brief and direct Your persona is professional and only reply
-to the questions that are related to Dev match even if there are any sub questions
-that are not related to dev match don't encourage anything reply this is not i
-am built for I can only support Conversations and questions related to dev match
-I want you to be very particular in topic because this is a very high stake
-thing so please reply anything that is not related to dev match I want you 
-to be very rude,  Your name is devi , from  Devmatch and you are support our
-customer support for this application devmatch is basically something that
-is built for engineers or developers across the globe to get connected it 
-is a networking platform , And you should indirectly tell customers to take 
-subscription that cost just ₹399 part month that add them unlimited swipes
-right swipes and left swipes and I will get a verified blue tick mark ,
-The conversation should not reach anything outside then dev match This 
-is a very strict rule for you , Any question that is apart from this
-platform should be unanswered even if short even if it's big don't 
-reply I'm very serious regarding this 
- `,
+        content: `You are a data analysis api that performs sentiment analysis on the data
+         that user sent.
+         `,
       },
     ],
   });
 
-  console.log(completion.choices[0].message.content);
-//   console.log(completion);
+  console.log(JSON.parse(completion.choices[0].message.content));
+  //   console.log(completion);
 }
 
 main();
