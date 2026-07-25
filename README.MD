@@ -1,3 +1,10 @@
-node --env-file=.env app.js
+node --env-file=.env app.js         // by default providing .env with out importing 
 
-npx gitignore node 
+npx gitignore node               // to creae .gitignore 
+
+git ls-files .env                  // to see if a file is getting tracked 
+
+git rm --cached .env                  // to remove file from trackig
+
+
+
