@@ -5,6 +5,10 @@ const askBtn = document.querySelector("#ask");
 input.addEventListener("keyup", handleEnter);
 askBtn.addEventListener("click", handleAsk);
 
+const loading = document.createElement("div");
+loading.className = "my-6 animate-pulse ";
+loading.textContent = "Thinking....";
+
 async function handleEnter(e) {
   if (e.key === "Enter") {
     const text = input?.value.trim();
@@ -14,7 +18,7 @@ async function handleEnter(e) {
     await generate(text);
     const res = await callServer(text);
     console.log(res);
-    generateResponse(res)
+    generateResponse(res);
   }
 }
 
@@ -27,7 +31,7 @@ async function handleAsk(e) {
 
   const res = await callServer(text);
   console.log(res);
-  generateResponse(res)
+  generateResponse(res);
 }
 
 async function generate(text) {
@@ -37,18 +41,22 @@ async function generate(text) {
   chatContainer.appendChild(msg);
   input.value = "";
 
+  chatContainer.appendChild(loading);
+
   const res = await callServer(text);
-} // user msg 
+} // user msg
 
 async function generateResponse(text) {
   const msg = document.createElement("div");
   msg.className = `my-6 p-3 mr-auto max-w-fit`;
   msg.textContent = text;
+
+  loading.remove();
   chatContainer.appendChild(msg);
   // input.value = "";
 
   // const res = await callServer(text);
-} // ai msg 
+} // ai msg
 
 async function callServer(userInput) {
   const response = await fetch("http://localhost:3005/chat", {
