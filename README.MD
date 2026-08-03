@@ -1,4 +1,4 @@
-node --env-file=.env app.js         // by default providing .env with out importing 
+node --env-file=.env server.js        // by default providing .env with out importing 
 
 npx gitignore node               // to creae .gitignore 
 

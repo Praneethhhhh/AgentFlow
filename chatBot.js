@@ -2,49 +2,76 @@ import readline from "node:readline/promises";
 import Groq from "groq-sdk";
 import { tavily } from "@tavily/core";
 import util from "node:util";
+import NodeCache from "node-cache";
 
 const tvly = tavily({ apiKey: process.env.TAVILY_API_KEY });
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
-export async function generate(userMessage) {
+const cache = new NodeCache({ stdTTL: 60 * 60 * 24 }); // FOR CLEARING MEMORY FROM CACHE
+
+export async function generate(userMessage, threadId) {
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
   });
 
-  const messages = [
+  const baseMessages = [
     {
       role: "system",
-      content: ` You are a smart personal assistant If you know
-       the answer to the question answer it directly in plain English .
-       If the answer requires a real real local or up-to-date information
-        or if you don't know the answer Use the available tools to find it
-        You have access to the following tools:
-        webSearch(query:string) : Use this to search the Internet for current 
-        or unknown information . 
+      content: `
+You are a helpful, knowledgeable, and concise AI assistant.
 
-        Decide when to use your own knowledge and when to use the tool
-        Do not mention the tool unless needed
+Your primary goal is to provide clear, accurate, and easy-to-read answers.
 
-        example : q. what is the capital of france : 
-                a. the capital of france is paris
+General guidelines:
+- Answer the user's question directly.
+- Use your own knowledge whenever possible.
+- If the answer requires live, local, or recent information, use the available tools.
+- Never make up facts.
+- Do not mention internal tools unless the user asks.
 
-                q.what is the current weather in hyderabad
-                a. (use the search tool to get latest news )
-                
-         current dateTime : ${new Date().toUTCString}
- `,
+Writing style:
+- Write in clean Markdown.
+- Start with the direct answer.
+- Organize longer answers with headings.
+- Use bullet points for lists.
+- Keep paragraphs short (2-4 lines).
+- Avoid unnecessary repetition.
+- Avoid overly verbose introductions.
+- Use tables only when comparing multiple things.
+- Highlight important terms using **bold** only when it improves readability.
+- Keep the tone natural and conversational.
+- If the answer is simple, keep it simple. Do not add unnecessary sections.
+
+When explaining:
+- Explain step by step when appropriate.
+- Prefer clarity over complexity.
+- Avoid filler words and generic disclaimers.
+
+Current UTC time:
+${new Date().toUTCString()}
+`,
     },
   ];
+
+  const messages = cache.get(threadId) ?? baseMessages;
 
   messages.push({
     role: "user",
     content: userMessage,
   });
 
+  const max_retries = 10;
+  let count = 0;
+
   while (true) {
+    if (count > max_retries) {
+      return "i could not find the result , please try again ";
+    }
+
+    count += 1;
     const completion = await groq.chat.completions.create({
-      temperature: 2,
+      temperature: 0.1,
       model: "openai/gpt-oss-120b",
       messages: messages,
 
@@ -78,6 +105,9 @@ export async function generate(userMessage) {
     const toolCalls = completion.choices[0].message.tool_calls;
 
     if (!toolCalls) {
+      cache.set(threadId, messages);
+      // console.log("test23")
+      console.log(cache.data.v);
       return completion.choices[0].message.content;
     }
 
@@ -98,8 +128,6 @@ export async function generate(userMessage) {
     }
   }
 }
-
-// main();
 
 async function webSearch({ query }) {
   console.log("calling WebSearch...");
